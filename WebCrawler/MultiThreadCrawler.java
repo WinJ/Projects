@@ -19,18 +19,18 @@ public class MultiThreadCrawler {
     private static List<String> result;
 
     // start multithread crawler by calling CrawlerThread
-    public MultiThreadCrawler(String url) {
+    public MultiThreadCrawler(String url, String keyWord) {
         CrawlerThread.addFirstURL(url);
         
         CrawlerThread[] crawlerThread = new CrawlerThread[N];
         for(int i = 0; i < N; i++) {
-            crawlerThread[i] = new CrawlerThread();
+            crawlerThread[i] = new CrawlerThread(keyWord);
             crawlerThread[i].start();
         }
         
         // only crawling for 2 seconds.
         try {
-            Thread.sleep(2000);
+            Thread.sleep(10000);
         } catch(Exception ex) {}
         
         for(int i = 0; i < N; i++) {
@@ -41,7 +41,7 @@ public class MultiThreadCrawler {
     }
 
     public static void main(String[] args) {
-    	MultiThreadCrawler crawler = new MultiThreadCrawler(args[0]);
+    	MultiThreadCrawler crawler = new MultiThreadCrawler(args[0], args[1]);
     }
 }
 
@@ -49,7 +49,13 @@ class CrawlerThread extends Thread {
     private static BlockingQueue<String> q = new LinkedBlockingQueue<String>();
     private static Map<String, Boolean> map = new HashMap<String, Boolean>();
     private static List<String> result = new ArrayList<String>();
+    private static int kwCount;
+    private static String keyWord;
     
+    public CrawlerThread(String keyWord) {
+        this.keyWord = keyWord;
+    }
+
     // add root URL in the queue
     public static void addFirstURL(String url) {
         try {
@@ -57,8 +63,9 @@ class CrawlerThread extends Thread {
         } catch(InterruptedException ex) {
             //ex.printStackTrace();
         }
+        kwCount = 0;
     }
-    
+
     public static List<String> getResult() {
         return result;
     }
@@ -122,6 +129,15 @@ class CrawlerThread extends Thread {
             String newUrl = matcher.group();
             urlList.add(newUrl);
         }
+
+        String regexp_search = keyWord;
+        Pattern pattern_search = Pattern.compile(regexp_search);
+        Matcher matcher_search = pattern_search.matcher(pageContent);
+
+        while(matcher_search.find()) {
+            kwCount++;
+        }
+
         return urlList;
     }
     
@@ -148,6 +164,7 @@ class CrawlerThread extends Thread {
                 System.out.println(url);
                 
                 List<String> list = parseUrls(url);
+                System.out.println(kwCount);
                 for(String s : list) {
                     try {
                         q.put(s);
