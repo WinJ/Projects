@@ -1,3 +1,2 @@
-# Small_Proj
-small projects for learning and practice.
-Small tools and mini-games.
+Personal projects for learning and practice.
+Tools and mini-games.
